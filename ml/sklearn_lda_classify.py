@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Sep  6 15:25:15 2018
-
-@author: Vino
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Mon Sep  3 13:55:53 2018
-# 用gensim训练出来的doc2vec对文本进行分类:
+# 用gensim提取语料的lda指定维度的lda特征,然后对文本进行分类:
 @author: Vino
 """
 import pandas as pd
@@ -21,7 +14,6 @@ import random,warnings,time
 from gensim import corpora,models
 from collections import defaultdict
 warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
-
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 datafile = "datadir/dataSet.dat"

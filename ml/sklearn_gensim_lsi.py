@@ -108,19 +108,17 @@ def train_classify(trainX,trainY,testX,testY,mode):
         from lightgbm import LGBMClassifier
         model = LGBMClassifier(num_leaves=127)
         model.fit(trainX,trainY)
-        #clf = GridSearchCV(lgb_model,{'max_depth':[2,3,4]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
     if mode=="SVC":
         from sklearn.svm import SVC
         reg = SVC(kernel='linear',probability=True)
         clf = GridSearchCV(reg,{'C':[0.1,1.0,10.0,100]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
         clf.fit(trainX,trainY)
-        print(clf.best_score_)
-        print(clf.best_params_)
+        logging.info(clf.best_score_)
+        logging.info(clf.best_params_)
         model = clf.best_estimator_
     if mode=='LR':
         reg = LogisticRegression(dual=True)
         clf = GridSearchCV(reg,{'C':[0.5,1,1.5,2]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
-        #model = LogisticRegression(C=4, dual=True)
         clf.fit(trainX,trainY)
         logging.info(clf.best_score_)
         logging.info(clf.best_params_)

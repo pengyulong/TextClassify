@@ -18,7 +18,6 @@ import numpy as np
 from collections import Counter
 from sklearn.metrics import f1_score
 
-datafile = "datadir/dataSet.dat"
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 DIM_NUM=20
 def transform_fasttext(dataSet,fasttextfile,column):
@@ -35,9 +34,6 @@ def write_data(stringlist,savefile):
     with open(savefile,'w') as outfile:
         for string in stringlist:
             outfile.write(string+'\n')
-    return True
-
-def evaluate():
     return True
 
 def predict_data(infile,testfile):

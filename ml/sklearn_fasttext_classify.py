@@ -83,7 +83,7 @@ def get_combine_feature(csvfile,column,doc2vec,lsi):
     else:
         doc2vec_feature_train = get_doc2vec_feature(trainSet,column,doc2vec)
         joblib.dump(doc2vec_feature_train,"datadir/train_doc2vec.data")
-    logging.info("将训练集的doc2ve和lsi特征按列组合")
+    logging.info("将训练集的doc2vec和lsi特征按列组合")
     train_feature = np.hstack([lsi_feature_train,doc2vec_feature_train])
     logging.info("训练集特征的维度:{}".format(train_feature.shape))
     train_label = (trainSet['class']-1).astype(int)
@@ -110,14 +110,15 @@ def train_classify(trainX,trainY,testX,testY,mode):
     #trainX,testX,trainY,testY = train_test_split(dataX,dataY,test_size=0.3,random_state=33)
     if mode=="lightgbm":
         model = LGBMClassifier()
+        model.fit(trainX,trainY)
         #clf = GridSearchCV(lgb_model,{'max_depth':[2,3,4]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
     if mode=="SVC":
         from sklearn.svm import SVC
         reg = SVC(kernel='linear',verbose=True,probability=True)
         clf = GridSearchCV(reg,{'C':[0.1,1.0,10.0,100]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
         clf.fit(trainX,trainY)
-        print(clf.best_score_)
-        print(clf.best_params_)
+        logging.info(clf.best_score_)
+        logging.info(clf.best_params_)
         model = clf.best_estimator_
     if mode=='LR':
         model = LogisticRegression(C=4, dual=True)
@@ -125,8 +126,8 @@ def train_classify(trainX,trainY,testX,testY,mode):
     y_pred2 = model.predict(trainX)
     test_F1 = f1_score(testY,y_pred1,average='weighted')
     joblib.dump(model,"model/{}_{}.model".format(mode,test_F1))
-    print("测试集的f1分数:{}".format(test_F1))
-    print("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='weighted')))
+    logging.info("测试集的f1分数:{}".format(test_F1))
+    logging.info("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='weighted')))
     return model,test_F1
 
 def save_prob_file(test_id,probs,filename):

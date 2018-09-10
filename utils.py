@@ -121,7 +121,7 @@ def try_all_gpus():
 
 class BiRNN(nn.Block):
     """
-    定义双向lstm模型
+    该模型来源于沐神的gluon教材
     """
     def __init__(self,vocab,embed_size,num_hiddens,num_layers,bidirectional,num_outputs,**kwargs):
         super(BiRNN,self).__init__(**kwargs)
@@ -135,7 +135,11 @@ class BiRNN(nn.Block):
         outputs = self.decoder(encoding)
         return outputs
 
-class TextCNN(nn.HybridBlock):
+class TextCNN(nn.Block):
+    '''
+    该模型来源于沐神的gluon教材,稍微有点区别的是,这里在conv和池化层之间,添加啦batchnorm层
+    感谢沐神和gluon团队
+    '''
     def __init__(self, vocab, embedding_size, ngram_kernel_sizes,
                  nums_channels, num_outputs, **kwargs):
         super(TextCNN, self).__init__(**kwargs)
@@ -158,7 +162,7 @@ class TextCNN(nn.HybridBlock):
         self.dropout = nn.Dropout(0.5)
         self.decoder = nn.Dense(num_outputs)
 
-    def hybrid_forward(self, F, inputs):
+    def forward(self, inputs):
         # 将 inputs 的形状由（批量大小，词数）变换为（词数，批量大小）。
         inputs = inputs.T
         # 根据 Conv1D 要求的输入形状，embeddings_static 和 embeddings_non_static
@@ -167,7 +171,7 @@ class TextCNN(nn.HybridBlock):
         embeddings_non_static = self.embedding_non_static(
             inputs).transpose((1, 2, 0))
         # 将 embeddings_static 和 embeddings_non_static 按词向量维度连结。
-        embeddings = F.concat(embeddings_static, embeddings_non_static,
+        embeddings = nd.concat(embeddings_static, embeddings_non_static,
                                dim=1)
         # 对于第 i 个卷积核，在时序最大池化后会得到一个形状为
         # （批量大小，nums_channels[i]，1）的矩阵。使用 flatten 函数将它形状压成
@@ -177,7 +181,7 @@ class TextCNN(nn.HybridBlock):
             for i in range(len(self.ngram_kernel_sizes))]
         # 将批量按各通道的输出连结。encoding 的形状：
         # （批量大小，nums_channels 各元素之和）。
-        encoding = F.concat(*encoding, dim=1)
+        encoding = nd.concat(*encoding, dim=1)
         outputs = self.decoder(self.dropout(encoding))
         return outputs
 
@@ -202,9 +206,10 @@ def try_gpu():
 
 def read_dg_data(trainSet,valSet,vocab,column):
     """
-    读取竞赛方提供的数据,并进行预处理,作为text rnn模型的输入
+    读取竞赛方提供的csv数据,并进行预处理,作为dl模型的输入
     """
     def encode_samples(token_samples,vocab):
+        # 对语料数据构建字典，进行索引转化
         features = []
         for sample in token_samples:
             feature = []
@@ -212,11 +217,18 @@ def read_dg_data(trainSet,valSet,vocab,column):
                 if token in vocab.token_to_idx:
                     feature.append(vocab.token_to_idx[token])
                 else:
+                    #不在字典库的设置为索引为0
                     feature.append(0)
             features.append(feature)
         return features
 
-    def pad_sample(features,maxlen=1000,PAD=0):
+    def pad_sample(features,maxlen=1000):
+        '''
+        (1)对所有的句子的长度进行截断或补齐，使之所有的文档的长度均为maxlen
+        (2)截断的策略，是后端截断,是否可以随机截断一部分?
+        (3)补齐的策略，是指少于maxlen长度的文本,随机选取一个字段进行填充,是否可以选取maxlen-len(sentence)个字段进行填充呢?
+        (4)这里的maxlen的长度是一个超参数,其实我是根据所有文档的长度的分布来获取的,这个参数的选取应该也可以进行微调.
+        '''
         padded_features = []
         for feature in features:
             if len(feature)> maxlen:
@@ -237,7 +249,9 @@ def read_dg_data(trainSet,valSet,vocab,column):
     return train_features,test_features,train_labels,test_labels
 
 def save_prob_file(test_id,probs,filename):
-    #保存概率文件
+    '''
+    保存概率文件
+    '''
     test_prob=pd.DataFrame(probs)
     num_outputs = len(probs[0])
     test_prob.columns=["class_prob_%s"%i for i in range(1,num_outputs+1)]
@@ -246,6 +260,9 @@ def save_prob_file(test_id,probs,filename):
     return True
 
 def read_vocab(vocabfile):
+    '''
+    读取字典文件,并用gluon自带的text生成可用的vocab对象
+    '''
     word_count = collections.Counter()
     with open(vocabfile,'r') as infile:
         for line in infile.readlines():
@@ -256,6 +273,9 @@ def read_vocab(vocabfile):
     return vocab
 
 def evaluate_valset(net,ValSet,vocab,column):
+    '''
+    对验证集进行f1_score进行验证，只是为了比较acc与f1_score的差别，因为最终提交结果是用f1来排名的.
+    '''
     logging.info("valSet 's shape:{}".format(ValSet.shape))
     docs = ValSet[column].tolist()
     y_true = ValSet['class'].tolist()
@@ -270,6 +290,9 @@ def evaluate_valset(net,ValSet,vocab,column):
     return f1
 
 def predict_test_result(net,vocab,testSet,column,result_file):
+    '''
+    对测试集进行预测,并保留每个类别的概率文件,方便后续做模型的概率融合
+    '''
     fhandle = open(result_file,'w')
     fhandle.write('id,class\n')
     logging.info("预测集的长度:{}".format(testSet.shape[0]))

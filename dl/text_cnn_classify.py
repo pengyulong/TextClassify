@@ -3,7 +3,8 @@ from mxnet import gluon,init
 from mxnet.contrib import text
 from mxnet.gluon import data as gdata,loss as gloss
 import pandas as pd
-
+import sys
+sys.path.insert(0,'..')
 import utils
 from utils import logging
 
