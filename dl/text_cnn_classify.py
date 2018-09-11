@@ -18,11 +18,11 @@ def main():
     ngram_kernel_sizes = [3, 4, 5]
     nums_channels = [100, 100, 100]
     ctx = utils.try_all_gpus()
-    column = 'article'
-    csvfile = "train_set.csv"
-    vocabfile = "{}.dict".format(column)
+    column = 'word_seg'
+    csvfile = "../data/train_set.csv"
+    vocabfile = "../data/{}.dict".format(column)
     vocab = utils.read_vocab(vocabfile)
-    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path='{}.300d.txt'.format(column), vocabulary=vocab)
+    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path='../data/{}.300d.txt'.format(column), vocabulary=vocab)
     net = utils.TextCNN(vocab, embed_size, ngram_kernel_sizes, nums_channels,num_outputs)
     #net.hybridize()
     net.initialize(init.Xavier(), ctx=ctx)

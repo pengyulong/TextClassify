@@ -74,7 +74,7 @@ def _get_batch(batch, ctx):
 
 def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column):
     """Train and evaluate a model."""
-    logging.info('training on', ctx)
+    print('training on', ctx)
     best_acc = 0.7
     if isinstance(ctx, mx.Context):
         ctx = [ctx]
@@ -177,7 +177,7 @@ class TextCNN(nn.Block):
         # （批量大小，nums_channels[i]，1）的矩阵。使用 flatten 函数将它形状压成
         # （批量大小，nums_channels[i]）。
         encoding = [
-            F.flatten(self.get_pool(i)(self.get_bn(i)(self.get_conv(i)(embeddings))))
+            nd.flatten(self.get_pool(i)(self.get_bn(i)(self.get_conv(i)(embeddings))))
             for i in range(len(self.ngram_kernel_sizes))]
         # 将批量按各通道的输出连结。encoding 的形状：
         # （批量大小，nums_channels 各元素之和）。
