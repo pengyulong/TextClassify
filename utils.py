@@ -204,7 +204,7 @@ def try_gpu():
     return ctx
 
 
-def read_dg_data(trainSet,valSet,vocab,column):
+def read_dg_data(trainSet,valSet,vocab,column,MAX_LEN=1000):
     """
     读取竞赛方提供的csv数据,并进行预处理,作为dl模型的输入
     """
@@ -222,11 +222,11 @@ def read_dg_data(trainSet,valSet,vocab,column):
             features.append(feature)
         return features
 
-    def pad_sample(features,maxlen=1000):
+    def pad_sample(features,maxlen=MAX_LEN):
         '''
         (1)对所有的句子的长度进行截断或补齐，使之所有的文档的长度均为maxlen
         (2)截断的策略，是后端截断,是否可以随机截断一部分?
-        (3)补齐的策略，是指少于maxlen长度的文本,随机选取一个字段进行填充,是否可以选取maxlen-len(sentence)个字段进行填充呢?
+        (3)补齐的策略，是指少于maxlen长度的文本,随机选取一个字段进行填充,是否可以选取MAX_LEN-len(sentence)个字段进行填充呢?
         (4)这里的maxlen的长度是一个超参数,其实我是根据所有文档的长度的分布来获取的,这个参数的选取应该也可以进行微调.
         '''
         padded_features = []
@@ -309,3 +309,34 @@ def predict_test_result(net,vocab,testSet,column,result_file):
         test_id.append(i)
         y_probs.append(prob)
     return y_probs,test_id
+
+def train_classify(trainX,trainY,testX,testY,mode):
+    from sklearn.model_selection import GridSearchCV
+    if mode=="lightgbm":
+        from lightgbm import LGBMClassifier
+        model = LGBMClassifier(num_leaves=127) #这里目前只知道num_leaves这个参数
+        model.fit(trainX,trainY)
+        #clf = GridSearchCV(lgb_model,{'max_depth':[2,3,4]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
+    if mode=="SVC":
+        from sklearn.svm import SVC
+        reg = SVC(kernel='linear',probability=True)
+        clf = GridSearchCV(reg,{'C':[0.1,1.0,10.0,100]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
+        clf.fit(trainX,trainY)
+        logging.info(clf.best_score_)
+        logging.info(clf.best_params_)
+        model = clf.best_estimator_
+    if mode=='LR':
+        from sklearn.linear_model import LogisticRegression
+        reg = LogisticRegression(dual=True)
+        clf = GridSearchCV(reg,{'C':[0.5,1,1.5,2]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
+        clf.fit(trainX,trainY)
+        logging.info(clf.best_score_)
+        logging.info(clf.best_params_)
+        model = clf.best_estimator_
+    y_pred1 = model.predict(testX)
+    y_pred2 = model.predict(trainX)
+    test_F1 = f1_score(testY,y_pred1,average='weighted')
+    joblib.dump(model,"model/{}_{}.model".format(mode,test_F1))
+    logging.info("测试集的f1分数:{}".format(test_F1))
+    logging.info("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='weighted')))
+    return model,test_F1

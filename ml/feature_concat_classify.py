@@ -13,6 +13,9 @@ from collections import Counter
 import random
 from gensim import corpora,models
 from collections import defaultdict
+import sys
+sys.path.insert(0,'..')
+import utils
 
 NUM_DIM = 50
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -76,63 +79,7 @@ def train_lsi_model(corpus,dictionary,column):
         lsi.save(lsi_file)
     return tfidf,lsi
 
-def select_sample_by_class(trainfile,idxfile):
-    ratio = 0.9
-    if os.path.exists(idxfile)==True:
-        (trainSet,valSet) = joblib.load(idxfile)
-        return trainSet,valSet
-    else:
-        train_index = []
-        val_index = []
-        df = pd.read_csv(trainfile)
-        df.set_index('id',inplace=True)
-        class_item = Counter(df['class'].tolist())
-        for key in class_item.keys():
-            temp = df[df['class']==key].index.tolist()
-            random.shuffle(temp)
-            nlength = len(temp)
-            for i in range(nlength):
-                if i < int(ratio*nlength):
-                    train_index.append(temp[i])
-                else:
-                    val_index.append(temp[i])
-        trainSet = df.loc[train_index]
-        valSet = df.loc[val_index]
-        joblib.dump((trainSet,valSet),idxfile)
-        return (trainSet,valSet)
 
-def train_classify(trainX,trainY,testX,testY,mode):
-    from sklearn.model_selection import GridSearchCV
-    from sklearn.linear_model import LogisticRegression
-    #trainX,testX,trainY,testY = train_test_split(dataX,dataY,test_size=0.3,random_state=33)
-    if mode=="lightgbm":
-        from lightgbm import LGBMClassifier
-        model = LGBMClassifier(num_leaves=127)
-        model.fit(trainX,trainY)
-        #clf = GridSearchCV(lgb_model,{'max_depth':[2,3,4]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
-    if mode=="SVC":
-        from sklearn.svm import SVC
-        reg = SVC(kernel='linear',probability=True)
-        clf = GridSearchCV(reg,{'C':[0.1,1.0,10.0,100]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
-        clf.fit(trainX,trainY)
-        print(clf.best_score_)
-        print(clf.best_params_)
-        model = clf.best_estimator_
-    if mode=='LR':
-        reg = LogisticRegression(dual=True)
-        clf = GridSearchCV(reg,{'C':[0.5,1,1.5,2]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
-        #model = LogisticRegression(C=4, dual=True)
-        clf.fit(trainX,trainY)
-        logging.info(clf.best_score_)
-        logging.info(clf.best_params_)
-        model = clf.best_estimator_
-    y_pred1 = model.predict(testX)
-    y_pred2 = model.predict(trainX)
-    test_F1 = f1_score(testY,y_pred1,average='weighted')
-    joblib.dump(model,"model/{}_{}.model".format(mode,test_F1))
-    logging.info("测试集的f1分数:{}".format(test_F1))
-    logging.info("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='weighted')))
-    return model,test_F1
 
 def save_prob_file(test_id,probs,filename):
     #保存概率文件

@@ -37,7 +37,7 @@ def main():
     trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': lr})
     loss = gloss.SoftmaxCrossEntropyLoss()
     trainSet,valSet = utils.select_sample_by_class(csvfile,ratio=0.85)
-    train_features,test_features,train_labels,test_labels=utils.read_dg_data(trainSet,valSet,vocab,column)
+    train_features,test_features,train_labels,test_labels=utils.read_dg_data(trainSet,valSet,vocab,column,MAX_LEN=2500)
     train_set = gdata.ArrayDataset(train_features, train_labels) #训练集
     test_set = gdata.ArrayDataset(test_features, test_labels) #测试集
     train_loader = gdata.DataLoader(train_set, batch_size=batch_size,shuffle=True)
