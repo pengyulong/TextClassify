@@ -12,8 +12,8 @@ def main():
     DIM_NUM=300
     num_outputs = 19
     lr = 0.01
-    num_epochs = 10
-    batch_size = 128
+    num_epochs = 1
+    batch_size = 64
     embed_size = 300
     ngram_kernel_sizes = [3, 4, 5]
     nums_channels = [100, 100, 100]
