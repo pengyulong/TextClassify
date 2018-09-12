@@ -13,21 +13,21 @@ from mxnet.gluon import data as gdata,loss as gloss
 from Parameter import ProjectPath,RNNParameter
 
 
-def main():
-    num_outputs = 19
-    lr = 0.1
-    num_epochs = 100
-    batch_size = 128
-    embed_size = 300
-    num_hiddens = 256
-    num_layers = 2
-    bidirectional = True
+def main(column,DIM_NUM):
+    Params = RNNParameter()
+    paths = ProjectPath()
+    num_outputs = Params.num_outputs
+    lr = Params.lr
+    num_epochs = Params.num_epochs
+    batch_size = Params.batch_size
+    embed_size = DIM_NUM
+    num_hiddens = Params.num_hiddens
+    num_layers = Params.num_layers
+    bidirectional = Params.bidirectional
     ctx = utils.try_all_gpus()
-    csvfile = "train_set.csv"
-    column = 'word_seg'
-    vocabfile = "{}.dict".format(column)
-    vocab = utils.read_vocab(vocabfile)
-    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path='{}.300d.txt'.format(column), vocabulary=vocab)
+    csvfile = paths.train_file
+    vocab = utils.read_vocab(paths.vocab_file)
+    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path=paths.embedding_file, vocabulary=vocab)
     net = utils.BiRNN(vocab, embed_size, num_hiddens, num_layers, bidirectional,
                 num_outputs)
     net.initialize(init.Xavier(), ctx=ctx)

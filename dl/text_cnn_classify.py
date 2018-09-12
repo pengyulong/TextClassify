@@ -3,11 +3,11 @@ from mxnet import gluon,init
 from mxnet.contrib import text
 from mxnet.gluon import data as gdata,loss as gloss
 import pandas as pd
-import sys
+import sys,os
 sys.path.insert(0,'..')
 import utils
 from utils import logging
-from Parameter import ProjectPath,CNNParameter
+from Parameter import CNNParameter
 
 def main(column,DIM_NUM):
     '''
@@ -36,11 +36,10 @@ def main(column,DIM_NUM):
     train_loader = gdata.DataLoader(train_set, batch_size=Params.batch_size,shuffle=True)
     test_loader = gdata.DataLoader(test_set, batch_size=Params.batch_size, shuffle=False)
     logging.info("开始训练cnn {} 文本分类模型...".format(column))
-    best_acc = utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column,best_param_file)
-    logging.info("模型训练完成,开始测试...")
-    logging.info("cnn网络在验证集的f1_score:{}".format(f1))
+    best_acc = utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column,Params.best_param_file)
+    logging.info("模型训练完成,最佳的acc:{} 开始测试...".format(best_acc))
     try:
-        net.load_parameters(best_param_file,ctx=ctx)
+        net.load_parameters(Params.best_param_file,ctx=ctx)
     except Exception as err:
         logging.info("模型精度不够,请重新设置参数")
     f1= utils.evaluate_valSet(net,vocab,valSet,column)
