@@ -10,12 +10,13 @@ from utils import logging
 import utils
 import pandas as pd
 from mxnet.gluon import data as gdata,loss as gloss
-from Parameter import ProjectPath,RNNParameter
+from Parameter import RNNParameter
 
 
 def main(column,DIM_NUM):
-    Params = RNNParameter()
-    paths = ProjectPath()
+    column = 'word_seg'
+    NUM_DIM = 300
+    Params = RNNParameter(column,NUM_DIM)
     num_outputs = Params.num_outputs
     lr = Params.lr
     num_epochs = Params.num_epochs
@@ -25,9 +26,9 @@ def main(column,DIM_NUM):
     num_layers = Params.num_layers
     bidirectional = Params.bidirectional
     ctx = utils.try_all_gpus()
-    csvfile = paths.train_file
-    vocab = utils.read_vocab(paths.vocab_file)
-    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path=paths.embedding_file, vocabulary=vocab)
+    csvfile = Params.train_file
+    vocab = utils.read_vocab(Params.vocab_file)
+    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path=Params.embedding_file, vocabulary=vocab)
     net = utils.BiRNN(vocab, embed_size, num_hiddens, num_layers, bidirectional,
                 num_outputs)
     net.initialize(init.Xavier(), ctx=ctx)
@@ -44,9 +45,9 @@ def main(column,DIM_NUM):
     train_loader = gdata.DataLoader(train_set, batch_size=batch_size,shuffle=True)
     test_loader = gdata.DataLoader(test_set, batch_size=batch_size, shuffle=False)
     logging.info("开始训练rnn {}文本分类模型".format(column))
-    utils.train(train_loader, test_loader, net, loss, trainer, ctx, num_epochs,column)
-    logging.info("模型训练完成,开始测试.")
-    net.load_parameters('model/rnn_{}_best.param'.format(column),ctx=ctx)
+    best_acc = utils.train(train_loader, test_loader, net, loss, trainer, ctx, num_epochs,column,Params.best_param_file)
+    logging.info("模型训练完成,最佳模型的acc:{} 开始测试.".format(best_acc))
+    net.load_parameters(Params.best_param_file,ctx=ctx)
     f1= utils.evaluate_valset(net,valSet,column)
     logging.info("rnn网络在验证集的f1_score:{}".format(f1))
     # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
@@ -59,4 +60,4 @@ def main(column,DIM_NUM):
     logging.info("保存完毕,请查看目录result.")
 
 if __name__ == "__main__":
-    main()
+    main(column,DIM_NUM)
