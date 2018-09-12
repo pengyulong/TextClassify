@@ -37,17 +37,6 @@ def accuracy(y_hat, y):
     """Get accuracy."""
     return (y_hat.argmax(axis=1) == y.astype('float32')).mean().asscalar()
 
-def count_tokens(samples):
-    """Count tokens in the data set."""
-    token_counter = collections.Counter()
-    for sample in samples:
-        for token in sample:
-            if token not in token_counter:
-                token_counter[token] = 1
-            else:
-                token_counter[token] += 1
-    return token_counter
-
 def evaluate_accuracy(data_iter, net, ctx=[mx.cpu()]):
     """Evaluate accuracy of a model on the given data set."""
     if isinstance(ctx, mx.Context):
@@ -286,7 +275,7 @@ def evaluate_valset(net,ValSet,vocab,column):
         output = nd.softmax(output)
         label = int(nd.argmax(output,axis=1).asscalar()+1)
         y_pred.append(label)
-    f1 = f1_score(y_true,y_pred,average='weighted')
+    f1 = f1_score(y_true,y_pred,average='macro')
     return f1
 
 def predict_test_result(net,vocab,testSet,column,result_file):
@@ -320,7 +309,7 @@ def train_classify(trainX,trainY,testX,testY,mode):
     if mode=="SVC":
         from sklearn.svm import SVC
         reg = SVC(kernel='linear',probability=True)
-        clf = GridSearchCV(reg,{'C':[0.1,1.0,10.0,100]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
+        clf = GridSearchCV(reg,{'C':[0.1,1.0,10.0,100]},cv=5,scoring='f1_macro',verbose=1,n_jobs=-1)
         clf.fit(trainX,trainY)
         logging.info(clf.best_score_)
         logging.info(clf.best_params_)
@@ -328,15 +317,15 @@ def train_classify(trainX,trainY,testX,testY,mode):
     if mode=='LR':
         from sklearn.linear_model import LogisticRegression
         reg = LogisticRegression(dual=True)
-        clf = GridSearchCV(reg,{'C':[0.5,1,1.5,2]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
+        clf = GridSearchCV(reg,{'C':[0.5,1,1.5,2]},cv=5,scoring='f1_macro',verbose=1,n_jobs=-1)
         clf.fit(trainX,trainY)
         logging.info(clf.best_score_)
         logging.info(clf.best_params_)
         model = clf.best_estimator_
     y_pred1 = model.predict(testX)
     y_pred2 = model.predict(trainX)
-    test_F1 = f1_score(testY,y_pred1,average='weighted')
+    test_F1 = f1_score(testY,y_pred1,average='macro')
     joblib.dump(model,"model/{}_{}.model".format(mode,test_F1))
     logging.info("测试集的f1分数:{}".format(test_F1))
-    logging.info("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='weighted')))
+    logging.info("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='macro')))
     return model,test_F1

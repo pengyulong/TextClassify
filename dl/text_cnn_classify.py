@@ -42,13 +42,13 @@ def main():
     logging.info("开始训练cnn {} 文本分类模型".format(column))
     utils.train(train_loader, test_loader, net, loss, trainer, ctx, num_epochs,column)
     logging.info("模型训练完成,开始测试.")
-    f1= utils.evaluate_valSet(net,valSet,column)
+    f1= utils.evaluate_valset(net,valSet,column)
     logging.info("cnn网络在验证集的f1_score:{}".format(f1))
     try:
         net.load_parameters('model/rnn_{}_best.param'.format(column),ctx=ctx)
     except Exception as err:
         logging.info("模型精度不够,请重新设置参数")
-    f1= utils.evaluate_valSet(net,valSet,column)
+    f1= utils.evaluate_valSet(net,vocab,valSetcolumn)
     logging.info("rnn网络在验证集的f1_score:{}".format(f1))
     # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
     #--------------------------------------------------------------------------------
