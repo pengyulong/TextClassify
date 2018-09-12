@@ -10,6 +10,7 @@ from utils import logging
 import utils
 import pandas as pd
 from mxnet.gluon import data as gdata,loss as gloss
+from Parameter import ProjectPath,RNNParameter
 
 
 def main():
