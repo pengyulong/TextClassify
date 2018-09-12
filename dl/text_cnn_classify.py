@@ -48,15 +48,15 @@ def main():
         net.load_parameters('model/rnn_{}_best.param'.format(column),ctx=ctx)
     except Exception as err:
         logging.info("模型精度不够,请重新设置参数")
-    f1= utils.evaluate_valSet(net,vocab,valSetcolumn)
+    f1= utils.evaluate_valSet(net,vocab,valSet,column)
     logging.info("rnn网络在验证集的f1_score:{}".format(f1))
     # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
     #--------------------------------------------------------------------------------
     logging.info("对数据进行测试")
     textSet = pd.read_csv('test_set.csv')
-    y_probs,test_id = utils.predict_test_result(net,vocab,textSet,column,'result/rnn_{}_{:.4f}.csv'.format(column,f1))
+    y_probs = utils.predict_test_result(net,vocab,textSet,column,'result/rnn_{}_{:.4f}.csv'.format(column,f1))
     logging.info("保存概率数据")
-    utils.save_prob_file(test_id,y_probs,'result/rnn_{}_{:.4f}_prob.csv'.format(column,f1))
+    utils.save_prob_file(y_probs,'result/rnn_{}_{:.4f}_prob.csv'.format(column,f1))
     logging.info("保存完毕,请查看目录result.")
 
 

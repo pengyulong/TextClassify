@@ -13,9 +13,12 @@ from sklearn.metrics import f1_score
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 def select_sample_by_class(trainfile,ratio):
-    """
-    将训练集的数据,按比例进行划分,得到训练集和验证集,用来调参
-    """
+    '''
+    将带标签的训练集数据按类别标签等比例划分成训练集和验证集，用于训练和线下测试模型
+    :param trainfile: 训练集文件名
+    :param ratio: 比例,float型(0,1)
+    :return:
+    '''
     train_index,val_index = [],[]
     df = pd.read_csv(trainfile)
     df.set_index('id',inplace=True)
@@ -126,7 +129,7 @@ class BiRNN(nn.Block):
 
 class TextCNN(nn.Block):
     '''
-    该模型来源于沐神的gluon教材,稍微有点区别的是,这里在conv和池化层之间,添加啦batchnorm层
+    该模型来源于沐神的gluon教材,稍微有点区别的是,这里在conv和池化层之间,添加了batchnorm层
     感谢沐神和gluon团队
     '''
     def __init__(self, vocab, embedding_size, ngram_kernel_sizes,
@@ -237,12 +240,17 @@ def read_dg_data(trainSet,valSet,vocab,column,MAX_LEN=1000):
     test_labels = nd.array((valSet['class']-1).astype(int))
     return train_features,test_features,train_labels,test_labels
 
-def save_prob_file(test_id,probs,filename):
+def save_prob_file(probs,filename):
     '''
-    保存概率文件
+    将模型对测试集预测各类别的概率保存到本地,方便以后做概率融合
+    :param probs:每个类别的概率文件,第一层list表示有多少个样本,
+                第二层list表示每个样本属于每个类别的概率
+    :param filename:概率保存的文件名称
+    :return:
     '''
     test_prob=pd.DataFrame(probs)
     num_outputs = len(probs[0])
+    test_id = [i for i in range(len(probs))]
     test_prob.columns=["class_prob_%s"%i for i in range(1,num_outputs+1)]
     test_prob['id']=list(test_id)
     test_prob.to_csv(filename,index=None)
@@ -250,7 +258,9 @@ def save_prob_file(test_id,probs,filename):
 
 def read_vocab(vocabfile):
     '''
-    读取字典文件,并用gluon自带的text生成可用的vocab对象
+    读取字典文件,并返回vocab对象,用于dl模型的输入
+    :param vocabfile: 输入字典文件名
+    :return: vocab字典对象
     '''
     word_count = collections.Counter()
     with open(vocabfile,'r') as infile:
@@ -263,7 +273,11 @@ def read_vocab(vocabfile):
 
 def evaluate_valset(net,ValSet,vocab,column):
     '''
-    对验证集进行f1_score进行验证，只是为了比较acc与f1_score的差别，因为最终提交结果是用f1来排名的.
+    :param net: dl模型的网络对象
+    :param ValSet: 验证集的DataFrame结构
+    :param vocab: 字典文件
+    :param column: 语料对象
+    :return: f1对象
     '''
     logging.info("valSet 's shape:{}".format(ValSet.shape))
     docs = ValSet[column].tolist()
@@ -280,7 +294,12 @@ def evaluate_valset(net,ValSet,vocab,column):
 
 def predict_test_result(net,vocab,testSet,column,result_file):
     '''
-    对测试集进行预测,并保留每个类别的概率文件,方便后续做模型的概率融合
+    :param net: 训练好的deeplearning网络
+    :param vocab: 训练网络中用到的字典
+    :param testSet: 预测集的DataFrame,后面可以改成文件名
+    :param column: 选取的列名
+    :param result_file: 存储结果的文件名
+    :return: 返回预测每一类的概率和id,用来保存概率文件
     '''
     fhandle = open(result_file,'w')
     fhandle.write('id,class\n')
@@ -297,9 +316,17 @@ def predict_test_result(net,vocab,testSet,column,result_file):
         fhandle.write("{},{}\n".format(i,label))
         test_id.append(i)
         y_probs.append(prob)
-    return y_probs,test_id
+    return y_probs
 
 def train_classify(trainX,trainY,testX,testY,mode):
+    '''
+    :param trainX: 表示训练集的feature
+    :param trainY: 训练集的标签
+    :param testX:  测试集的特征
+    :param testY:  测试集的标签
+    :param mode:  模型参数,可选SVC,lightgbm,LR三种
+    :return:
+    '''
     from sklearn.model_selection import GridSearchCV
     if mode=="lightgbm":
         from lightgbm import LGBMClassifier
@@ -324,8 +351,8 @@ def train_classify(trainX,trainY,testX,testY,mode):
         model = clf.best_estimator_
     y_pred1 = model.predict(testX)
     y_pred2 = model.predict(trainX)
-    test_F1 = f1_score(testY,y_pred1,average='macro')
-    joblib.dump(model,"model/{}_{}.model".format(mode,test_F1))
-    logging.info("测试集的f1分数:{}".format(test_F1))
-    logging.info("训练集的f1分数:{}".format(f1_score(trainY,y_pred2,average='macro')))
-    return model,test_F1
+    test_f1 = f1_score(testY,y_pred1,average='macro')
+    train_f1 = f1_score(trainY,y_pred2,average='macro')
+    logging.info("测试集的f1分数:{}".format(test_f1))
+    logging.info("训练集的f1分数:{}".format(train_f1))
+    return model,test_f1
