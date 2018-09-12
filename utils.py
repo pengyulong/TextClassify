@@ -64,7 +64,7 @@ def _get_batch(batch, ctx):
             gutils.split_and_load(labels, ctx,even_split=False),
             features.shape[0])
 
-def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column):
+def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column,best_param_file):
     """Train and evaluate a model."""
     print('training on', ctx)
     best_acc = 0.7
@@ -90,7 +90,7 @@ def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column):
         test_acc = evaluate_accuracy(test_iter, net, ctx)
         if test_acc>=best_acc:
             best_acc = test_acc
-            net.save_parameters("model/rnn_{}_best.param".format(column,best_acc))
+            net.save_parameters(best_param_file)
         logging.info('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, '
               'time %.1f sec'
               % (epoch, train_l_sum / n, train_acc_sum / m, test_acc,

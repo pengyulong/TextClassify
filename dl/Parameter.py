@@ -22,6 +22,8 @@ class RNNParameter:
 class ProjectPath():
     def __init__(self,column,DIM_NUM):
         self.data_dir = '../data'
+        self.model_dir = '../model'
+        self.result_dir = '../result'
         self.train_file = os.path.join(self.data_dir,"train_set.csv")
         self.test_file = os.path.join(self.data_dir,"test_set.csv")
         self.vocab_file = os.path.join(self.data_dir,"{}.dict".format(column))

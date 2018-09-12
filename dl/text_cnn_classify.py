@@ -38,25 +38,27 @@ def main(column,DIM_NUM):
     train_loader = gdata.DataLoader(train_set, batch_size=Params.batch_size,shuffle=True)
     test_loader = gdata.DataLoader(test_set, batch_size=Params.batch_size, shuffle=False)
     logging.info("开始训练cnn {} 文本分类模型".format(column))
-    utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column)
+    best_param_file = os.path.join("..","model","cnn_{}_best.param".format(column))
+    utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column,best_param_file)
     logging.info("模型训练完成,开始测试.")
     f1= utils.evaluate_valset(net,valSet,column)
     logging.info("cnn网络在验证集的f1_score:{}".format(f1))
     try:
-        net.load_parameters('model/rnn_{}_best.param'.format(column),ctx=ctx)
+        net.load_parameters(best_param_file,ctx=ctx)
     except Exception as err:
         logging.info("模型精度不够,请重新设置参数")
     f1= utils.evaluate_valSet(net,vocab,valSet,column)
+    best_file = os.path.join(paths.result_dir,"rnn_{}_{:.4f}.csv".format(column,f1))
+    best_prob_file = os.path.join(paths.result_dir,"rnn_{}_{:.4f}_prob.csv".format(column,f1))
     logging.info("rnn网络在验证集的f1_score:{}".format(f1))
     # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
     #--------------------------------------------------------------------------------
     logging.info("对数据进行测试")
     textSet = pd.read_csv('test_set.csv')
-    y_probs = utils.predict_test_result(net,vocab,textSet,column,'result/rnn_{}_{:.4f}.csv'.format(column,f1))
+    y_probs = utils.predict_test_result(net,vocab,textSet,column,best_file)
     logging.info("保存概率数据")
-    utils.save_prob_file(y_probs,'result/rnn_{}_{:.4f}_prob.csv'.format(column,f1))
+    utils.save_prob_file(y_probs,best_prob_file)
     logging.info("保存完毕,请查看目录result.")
-
 
 if __name__ == "__main__":
     main('word_seg',300)
