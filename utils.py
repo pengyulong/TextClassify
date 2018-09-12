@@ -96,6 +96,7 @@ def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column,best
               % (epoch, train_l_sum / n, train_acc_sum / m, test_acc,
                  time.time() - start))
     logging.info("最优模型在测试集的acc:{}".format(best_acc))
+    return best_acc
 
 def try_all_gpus():
     """Return all available GPUs, or [mx.cpu()] if there is no GPU."""

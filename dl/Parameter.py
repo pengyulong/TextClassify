@@ -25,6 +25,7 @@ class CNNParameter(ProjectPath):
 
 class RNNParameter(ProjectPath):
     def __init__(self,column,DIM_NUM):
+        ProjectPath.__init__(self,column,DIM_NUM)
         self.best_param_file = os.path.join(self.model_dir,"rnn_{}_best.param".format(column))
         self.num_outputs = 19
         self.lr = 0.1

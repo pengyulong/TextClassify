@@ -9,7 +9,6 @@ import utils
 from utils import logging
 from Parameter import ProjectPath,CNNParameter
 
-
 def main(column,DIM_NUM):
     '''
     :params column 表示使用数据集中的哪部分语料
@@ -36,11 +35,9 @@ def main(column,DIM_NUM):
     test_set = gdata.ArrayDataset(test_features, test_labels) #测试集
     train_loader = gdata.DataLoader(train_set, batch_size=Params.batch_size,shuffle=True)
     test_loader = gdata.DataLoader(test_set, batch_size=Params.batch_size, shuffle=False)
-    logging.info("开始训练cnn {} 文本分类模型".format(column))
-    best_param_file = os.path.join("..","model","cnn_{}_best.param".format(column))
-    utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column,best_param_file)
-    logging.info("模型训练完成,开始测试.")
-    f1= utils.evaluate_valset(net,valSet,column)
+    logging.info("开始训练cnn {} 文本分类模型...".format(column))
+    best_acc = utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column,best_param_file)
+    logging.info("模型训练完成,开始测试...")
     logging.info("cnn网络在验证集的f1_score:{}".format(f1))
     try:
         net.load_parameters(best_param_file,ctx=ctx)
@@ -49,13 +46,11 @@ def main(column,DIM_NUM):
     f1= utils.evaluate_valSet(net,vocab,valSet,column)
     best_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}.csv".format(column,f1))
     best_prob_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}_prob.csv".format(column,f1))
-    logging.info("rnn网络在验证集的f1_score:{}".format(f1))
-    # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
-    #--------------------------------------------------------------------------------
+    logging.info("rnn网络在验证集最佳的f1_score:{}".format(f1))
     logging.info("对数据进行测试")
-    textSet = pd.read_csv('test_set.csv')
+    textSet = pd.read_csv(Params.test_file)
     y_probs = utils.predict_test_result(net,vocab,textSet,column,best_file)
-    logging.info("保存概率数据")
+    logging.info("保存概率数据...")
     utils.save_prob_file(y_probs,best_prob_file)
     logging.info("保存完毕,请查看目录result.")
 
