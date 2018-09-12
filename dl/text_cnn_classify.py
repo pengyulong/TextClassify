@@ -15,11 +15,10 @@ def main(column,DIM_NUM):
     :params column 表示使用数据集中的哪部分语料
     :params DIM_NUM 表示使用的词向量的维度
     '''
-    paths = ProjectPath(column,DIM_NUM)
     Params = CNNParameter()
     ctx = utils.try_all_gpus()
-    csvfile = paths.train_file
-    vocabfile = paths.vocab_file
+    csvfile = Params.train_file
+    vocabfile = Params.vocab_file
     vocab = utils.read_vocab(vocabfile)
     glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path=paths.embedding_file, vocabulary=vocab)
     net = utils.TextCNN(vocab,DIM_NUM, Params.ngram_kernel_sizes, Params.nums_channels,Params.num_outputs)
@@ -48,8 +47,8 @@ def main(column,DIM_NUM):
     except Exception as err:
         logging.info("模型精度不够,请重新设置参数")
     f1= utils.evaluate_valSet(net,vocab,valSet,column)
-    best_file = os.path.join(paths.result_dir,"rnn_{}_{:.4f}.csv".format(column,f1))
-    best_prob_file = os.path.join(paths.result_dir,"rnn_{}_{:.4f}_prob.csv".format(column,f1))
+    best_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}.csv".format(column,f1))
+    best_prob_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}_prob.csv".format(column,f1))
     logging.info("rnn网络在验证集的f1_score:{}".format(f1))
     # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
     #--------------------------------------------------------------------------------
