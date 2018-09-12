@@ -25,4 +25,4 @@ class ProjectPath():
         self.train_file = os.path.join(self.data_dir,"train_set.csv")
         self.test_file = os.path.join(self.data_dir,"test_set.csv")
         self.vocab_file = os.path.join(self.data_dir,"{}.dict".format(column))
-        self.embedding_file = os.path.join(self.data_dir,"{}_{}d.txt".format(column,DIM_NUM))
+        self.embedding_file = os.path.join(self.data_dir,"{}.{}d.txt".format(column,DIM_NUM))

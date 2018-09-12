@@ -6,7 +6,6 @@ import pandas as pd
 import sys
 sys.path.insert(0,'..')
 import utils
-import fire
 from utils import logging
 from Parameter import ProjectPath,CNNParameter
 
@@ -60,4 +59,4 @@ def main(column,DIM_NUM):
 
 
 if __name__ == "__main__":
-    fire.Fire()
+    main('word_seg',300)
