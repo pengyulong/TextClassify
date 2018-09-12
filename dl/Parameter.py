@@ -12,8 +12,8 @@ class ProjectPath(object):
 
 
 class CNNParameter(ProjectPath):
-    def __init__(self,column,DIM_NUM,**kwargs):
-        super(ProjectPath,self).__init__(column,DIM_NUM,**kwargs)
+    def __init__(self,column,DIM_NUM):
+        ProjectPath.__init__(self,column,DIM_NUM)
         self.best_param_file = os.path.join(self.model_dir,"cnn_{}_best.param".format(column))
         self.num_outputs = 19
         self.num_epochs = 10

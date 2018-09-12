@@ -20,7 +20,7 @@ def main(column,DIM_NUM):
     csvfile = Params.train_file
     vocabfile = Params.vocab_file
     vocab = utils.read_vocab(vocabfile)
-    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path=paths.embedding_file, vocabulary=vocab)
+    glove_embedding = text.embedding.CustomEmbedding(pretrained_file_path=Params.embedding_file, vocabulary=vocab)
     net = utils.TextCNN(vocab,DIM_NUM, Params.ngram_kernel_sizes, Params.nums_channels,Params.num_outputs)
     net.initialize(init.Xavier(), ctx=ctx)
     # embedding_static 和 embedding_non_static 均使用预训练的词向量。
