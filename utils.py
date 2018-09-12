@@ -162,7 +162,7 @@ class TextCNN(nn.Block):
         self.dropout = nn.Dropout(0.5)
         self.decoder = nn.Dense(num_outputs)
 
-    def forward(self, inputs):
+    def forward(self,inputs):
         # 将 inputs 的形状由（批量大小，词数）变换为（词数，批量大小）。
         inputs = inputs.T
         # 根据 Conv1D 要求的输入形状，embeddings_static 和 embeddings_non_static
