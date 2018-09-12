@@ -15,7 +15,7 @@ def main(column,DIM_NUM):
     :params column 表示使用数据集中的哪部分语料
     :params DIM_NUM 表示使用的词向量的维度
     '''
-    Params = CNNParameter()
+    Params = CNNParameter(column,DIM_NUM)
     ctx = utils.try_all_gpus()
     csvfile = Params.train_file
     vocabfile = Params.vocab_file
