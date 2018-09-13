@@ -6,8 +6,8 @@ import fasttext
 import os
 import pandas as pd
 from sklearn.metrics import f1_score
-from .utils import logging,transform_fasttext,select_sample_by_class,write_data,save_prob_file
-from .Parameter import FasttextParameter
+from utils import logging,transform_fasttext,select_sample_by_class,write_data,save_prob_file
+from Parameter import FasttextParameter
 
 
 class FasttextClassify(FasttextParameter):
@@ -15,6 +15,8 @@ class FasttextClassify(FasttextParameter):
         FasttextParameter.__init__(self,column,fasttext_dim)
         self.model_file = os.path.join(self.model_dir,"{}_{}d.fasttext.bin".format(self.column,self.fasttext_dim))
         self.preTrained_vectors = os.path.join(self.model_dir,"fasttext_{}_{}d.vec".format(self.column,self.fasttext_dim))
+        self.model = None
+        self.best_score = None
 
     def load_data(self):
         logging.info("加载数据与模型....")
@@ -27,6 +29,7 @@ class FasttextClassify(FasttextParameter):
         else:
             logging.info("fasttext分类模型不存在,开始重新训练...")
             self.model = self.train_model()
+        self.best_score=self.evaluate()
         return True
 
     def train_model(self):
@@ -37,13 +40,11 @@ class FasttextClassify(FasttextParameter):
                                                  lr=0.1,epoch=100,dim=self.fasttext_dim,bucket=50000000,
                                                  loss='softmax',thread=56,min_count=3,word_ngrams=4,
                                                  pretrained_vectors=self.preTrained_vectors)
-            self.best_score=self.evaluate()
         else:
             logging.info("不存在预训练的词向量,重头开始训练...")
             classify_model = fasttext.supervised(self.fasttext_train_file, self.model_file[0:-4], lr=0.1, epoch=100,
                                                  dim=self.fasttext_dim, bucket=50000000, loss='softmax', thread=56,
                                                  min_count=3, word_ngrams=4)
-            self.best_score=self.evaluate()
         return classify_model
 
     def predict(self):
