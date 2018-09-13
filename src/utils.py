@@ -321,7 +321,7 @@ def predict_test_result(net,vocab,testSet,column,result_file):
         y_probs.append(prob)
     return y_probs
 
-def train_classify(trainX,trainY,testX,testY,mode):
+def train_classify(dataX,dataY,mode):
     '''
     :param trainX: 表示训练集的feature
     :param trainY: 训练集的标签
@@ -330,12 +330,14 @@ def train_classify(trainX,trainY,testX,testY,mode):
     :param mode:  模型参数,可选SVC,lightgbm,LR三种
     :return:
     '''
-    from sklearn.model_selection import GridSearchCV
+    from sklearn.model_selection import GridSearchCV,train_test_split
+    trainX, testX, trainY, testY = train_test_split(dataX, dataY, test_size=0.1, random_state=2008)
     if mode=="lightgbm":
         from lightgbm import LGBMClassifier
-        model = LGBMClassifier(num_leaves=127) #这里目前只知道num_leaves这个参数
-        model.fit(trainX,trainY)
-        #clf = GridSearchCV(lgb_model,{'max_depth':[2,3,4]},cv=5,scoring='f1_weighted',verbose=1,n_jobs=-1)
+        lgb_model = LGBMClassifier(num_leaves=127) #这里目前只知道num_leaves这个参数
+        clf = GridSearchCV(lgb_model,{'num_leaves':[32,64,128]},cv=5,scoring='f1_macro',verbose=1,n_jobs=-1)
+        clf.fit(trainX,trainY)
+        model = clf.best_estimator_
     if mode=="SVC":
         from sklearn.svm import SVC
         reg = SVC(kernel='linear',probability=True)
@@ -359,3 +361,18 @@ def train_classify(trainX,trainY,testX,testY,mode):
     logging.info("测试集的f1分数:{}".format(test_f1))
     logging.info("训练集的f1分数:{}".format(train_f1))
     return model,test_f1
+
+def transform_fasttext(dataSet,fasttextfile,column):
+    labels = (dataSet['class']-1).tolist()
+    texts = (dataSet[column]).tolist()
+    string_list = []
+    for i,(text,label) in enumerate(zip(texts,labels)):
+        string = '__label__{} , {}'.format(label,text)
+        string_list.append(string)
+    write_data(string_list,fasttextfile)
+    return True
+
+def write_data(stringlist,savefile):
+    with open(savefile,'w') as outfile:
+        outfile.write(stringlist)
+    return True

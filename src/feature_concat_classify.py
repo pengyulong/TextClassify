@@ -78,7 +78,6 @@ def train_lsi_model(corpus,dictionary,column):
     return tfidf,lsi
 
 
-
 def save_prob_file(test_id,probs,filename):
     #保存概率文件
     test_prob=pd.DataFrame(probs)

@@ -44,12 +44,38 @@ class RNNParameter(ProjectPath):
         self.best_param_file = os.path.join(self.model_dir,"rnn_{}_best.param".format(column))
 
 class MLParameter(ProjectPath):
+    '''
+    机器学习模型所需的参数
+    '''
     def __init__(self,column,lsi_num,lda_num):
         ProjectPath.__init__(self)
-        lsi_file = os.path.join(self.model_dir,"lsi_{}_{}d.model".format(column,lsi_num))
-        tfidf_ifle = os.path.join(self.model_dir,"tfidf_{}.model".format(column))
-        lda_file = os.path.join(self.model_dir,"lda_{}_{}d.model".format(column,lda_num))
+        self.lsi_num = 100
+        self.lda_num = 100
+        self.lsi_file = os.path.join(self.model_dir,"lsi_{}_{}d.model".format(column,lsi_num))
+        self.tfidf_file = os.path.join(self.model_dir,"tfidf_{}.model".format(column))
+        self.lda_file = os.path.join(self.model_dir,"lda_{}_{}d.model".format(column,lda_num))
+        self.dict_file = os.path.join(self.model_dir,"{}.dict".format(column))
+        self.corpus_file = os.path.join(self.model_dir,"{}.corpus".format(column))
+        self.mode = "lightgbm" #option [lightgbm,SVC,LR]
 
 
-
-
+class FasttextParameter(ProjectPath):
+    '''
+    fasttext模型所需的要参数
+    '''
+    def __init__(self,column,fasttext_dim):
+        ProjectPath.__init__(self)
+        self.column = column
+        self.fasttext_dim = fasttext_dim
+        self.fasttext_train_file = os.path.join(self.data_dir,"fasttext_train.dat") 
+        self.fasttext_val_file = os.path.join(self.data_dir,"fasttext_val.dat")
+        self.fasttext_test_file = os.path.join(self.data_dir,"fasttext_test.dat")
+        self.fasttext_dim = fasttext_dim
+        self.prefix_label = "__label__"
+        self.lr = 0.1
+        self.epochs = 10
+        self.num_outputs = 19
+        self.bucket = 50000000
+        self.thread = 56
+        self.min_count = 3
+        self.word_ngrams = 4
