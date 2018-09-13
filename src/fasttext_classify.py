@@ -60,7 +60,7 @@ class FasttextClassify(FasttextParameter):
             y_probs.append(arr)
             result_string.append("{},{}\n".format(i,int(label[0])+1))
             i = i+1
-        result_submit = os.path.join(self.result_dir,"fasttext_{}_{}.csv".format(self.column,self.best_score))
+        result_submit = os.path.join(self.result_dir,"fasttext_{}_{:.4f}.csv".format(self.column,self.best_score))
         result_probs = os.path.join(self.result_dir,"fasttext_prob_{}_{:.4f}.csv".format(self.column,self.best_score))
         save_prob_file(y_probs,result_probs)
         write_data("".join(result_string),result_submit)
