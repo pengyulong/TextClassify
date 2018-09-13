@@ -39,12 +39,12 @@ class FasttextClassify(FasttextParameter):
             classify_model = fasttext.supervised(self.fasttext_train_file,self.model_file[0:-4],
                                                  lr=0.1,epoch=100,dim=self.fasttext_dim,bucket=50000000,
                                                  loss='softmax',thread=56,min_count=3,word_ngrams=4,
-                                                 pretrained_vectors=self.preTrained_vectors)
+                                                 pretrained_vectors=self.preTrained_vectors,silent=False)
         else:
             logging.info("不存在预训练的词向量,重头开始训练...")
             classify_model = fasttext.supervised(self.fasttext_train_file, self.model_file[0:-4], lr=0.1, epoch=100,
                                                  dim=self.fasttext_dim, bucket=50000000, loss='softmax', thread=56,
-                                                 min_count=3, word_ngrams=4)
+                                                 min_count=3, word_ngrams=4,silent=False)
         return classify_model
 
     def predict(self):

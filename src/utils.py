@@ -367,9 +367,9 @@ def transform_fasttext(dataSet,fasttextfile,column):
     texts = (dataSet[column]).tolist()
     string_list = []
     for i,(text,label) in enumerate(zip(texts,labels)):
-        string = '__label__{} , {}'.format(label,text)
+        string = '__label__{} , {}\n'.format(label,text)
         string_list.append(string)
-    write_data(string_list,fasttextfile)
+    write_data(''.join(string_list),fasttextfile)
     return True
 
 def write_data(stringlist,savefile):
