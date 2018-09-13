@@ -6,6 +6,8 @@ Created on Tue Sep  4 16:52:12 2018
 """
 from mxnet import gluon,init
 from mxnet.contrib import text
+import sys
+sys.path.insert(0,'..')
 from utils import logging
 import utils
 import pandas as pd
@@ -48,7 +50,7 @@ def main(column,DIM_NUM):
     best_acc = utils.train(train_loader, test_loader, net, loss, trainer, ctx, num_epochs,column,Params.best_param_file)
     logging.info("模型训练完成,最佳模型的acc:{} 开始测试.".format(best_acc))
     net.load_parameters(Params.best_param_file,ctx=ctx)
-    f1= utils.evaluate_valset(net,valSet,column)
+    f1= utils.evaluate_valset(net,valSet,vocab,column)
     logging.info("rnn网络在验证集的f1_score:{}".format(f1))
     # net.save_parameters("model/rnn_{}_{:.4f}.param".format(column,f1))
     #--------------------------------------------------------------------------------
@@ -60,4 +62,4 @@ def main(column,DIM_NUM):
     logging.info("保存完毕,请查看目录result.")
 
 if __name__ == "__main__":
-    main(column,DIM_NUM)
+    main('word_seg',300)
