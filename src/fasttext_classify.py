@@ -18,7 +18,7 @@ class FasttextClassify(FasttextParameter):
 
     def load_data(self):
         logging.info("加载数据与模型....")
-        (self.trainSet,self.valSet)= select_sample_by_class(self.fasttext_train_file,ratio=0.85)
+        (self.trainSet,self.valSet)= select_sample_by_class(self.train_file,ratio=0.85)
         transform_fasttext(self.trainSet,self.fasttext_train_file,self.column)
         transform_fasttext(self.valSet,self.fasttext_val_file,self.column)
         if os.path.exists(self.model_file):
@@ -37,14 +37,13 @@ class FasttextClassify(FasttextParameter):
                                                  lr=0.1,epoch=100,dim=self.fasttext_dim,bucket=50000000,
                                                  loss='softmax',thread=56,min_count=3,word_ngrams=4,
                                                  pretrained_vectors=self.preTrained_vectors)
-            f2=self.evaluate()
+            self.best_score=self.evaluate()
         else:
             logging.info("不存在预训练的词向量,重头开始训练...")
             classify_model = fasttext.supervised(self.fasttext_train_file, self.model_file[0:-4], lr=0.1, epoch=100,
                                                  dim=self.fasttext_dim, bucket=50000000, loss='softmax', thread=56,
                                                  min_count=3, word_ngrams=4)
-            f2=self.evaluate()
-        self.best_score = f2
+            self.best_score=self.evaluate()
         return classify_model
 
     def predict(self):
