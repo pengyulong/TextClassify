@@ -42,7 +42,7 @@ def main(column,DIM_NUM):
         net.load_parameters(Params.best_param_file,ctx=ctx)
     except Exception as err:
         logging.info("模型精度不够,请重新设置参数")
-    f1= utils.evaluate_valSet(net,vocab,valSet,column)
+    f1= utils.evaluate_valset(net,vocab,valSet,column)
     best_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}.csv".format(column,f1))
     best_prob_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}_prob.csv".format(column,f1))
     logging.info("rnn网络在验证集最佳的f1_score:{}".format(f1))

@@ -67,7 +67,7 @@ def _get_batch(batch, ctx):
 def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column,best_param_file):
     """Train and evaluate a model."""
     print('training on', ctx)
-    best_acc = 0.7
+    best_acc,best_flag = 0.7,True
     if isinstance(ctx, mx.Context):
         ctx = [ctx]
     for epoch in range(1, num_epochs + 1):
@@ -89,13 +89,15 @@ def train(train_iter, test_iter, net, loss, trainer, ctx, num_epochs,column,best
             m += sum([y.size for y in ys])
         test_acc = evaluate_accuracy(test_iter, net, ctx)
         if test_acc>=best_acc:
+            best_flag = False
             best_acc = test_acc
             net.save_parameters(best_param_file)
         logging.info('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, '
               'time %.1f sec'
               % (epoch, train_l_sum / n, train_acc_sum / m, test_acc,
                  time.time() - start))
-    logging.info("最优模型在测试集的acc:{}".format(best_acc))
+    if best_flag:
+        net.save_parameters(best_param_file)
     return best_acc
 
 def try_all_gpus():
