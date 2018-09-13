@@ -30,6 +30,7 @@ class FasttextClassify(FasttextParameter):
         return True
 
     def train_model(self):
+        classify_model=None
         if os.path.exists(self.preTrained_vectors):
             logging.info("存在预训练的词向量,从本地加载词向量进行训练...")
             classify_model = fasttext.supervised(self.fasttext_train_file,self.model_file[0:-4],
@@ -47,23 +48,26 @@ class FasttextClassify(FasttextParameter):
         return classify_model
 
     def predict(self):
+        logging.info("对测试数据进行预测...")
         predX = pd.read_csv(self.test_file)[self.column].tolist()
         y_pred = self.model.predict(predX)
         probs_list = self.model.predict_proba(predX,self.num_outputs)
         y_probs,result_string,i= [],['id,class\n'],0
+        logging.info("预测结果完毕,开始将预测结果和类别概率写入文件...")
         for (prob,label) in zip(probs_list,y_pred):
             probs = sorted(prob,key=lambda x:int(x[0]))
             arr = [p[1] for p in probs]
             y_probs.append(arr)
-            result_string.append("{},{}\n".format(i,label+1))
+            result_string.append("{},{}\n".format(i,int(label[0])+1))
             i = i+1
         result_submit = os.path.join(self.result_dir,"fasttext_{}_{}.csv".format(self.column,self.best_score))
-        result_probs = os.path.join(self.result_dir,"fasttext_prob_{}_{}.csv".format(self.column,self.best_score))
+        result_probs = os.path.join(self.result_dir,"fasttext_prob_{}_{:.4f}.csv".format(self.column,self.best_score))
         save_prob_file(y_probs,result_probs)
-        write_data(result_string,result_submit)
+        write_data("".join(result_string),result_submit)
         logging.info("数据提交完毕,请查看:{}".format(self.result_dir))
 
     def evaluate(self):
+        logging.info("开始验证模型在验证集上的准确率...")
         trainX,trainY = self.trainSet[self.column].tolist(),(self.trainSet['class']-1).tolist()
         valX,valY = self.valSet[self.column].tolist(),(self.valSet['class']-1).tolist()
         y_pred_train = [int(pred[0]) for pred in self.model.predict(trainX)]
