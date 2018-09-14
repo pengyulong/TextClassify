@@ -27,7 +27,6 @@ class CNNParameter(ProjectPath):
         self.vocab_file = os.path.join(self.data_dir,"{}.dict".format(column))
         self.embedding_file = os.path.join(self.data_dir,"{}.{}d.txt".format(column,DIM_NUM))
         self.best_param_file = os.path.join(self.model_dir,"cnn_{}_best.param".format(column))
-        
 
 class RNNParameter(ProjectPath):
     def __init__(self,column,DIM_NUM):
@@ -42,22 +41,6 @@ class RNNParameter(ProjectPath):
         self.vocab_file = os.path.join(self.data_dir,"{}.dict".format(column))
         self.embedding_file = os.path.join(self.data_dir,"{}.{}d.txt".format(column,DIM_NUM))
         self.best_param_file = os.path.join(self.model_dir,"rnn_{}_best.param".format(column))
-
-class MLParameter(ProjectPath):
-    '''
-    机器学习模型所需的参数
-    '''
-    def __init__(self,column,lsi_num,lda_num):
-        ProjectPath.__init__(self)
-        self.lsi_num = 100
-        self.lda_num = 100
-        self.lsi_file = os.path.join(self.model_dir,"lsi_{}_{}d.model".format(column,lsi_num))
-        self.tfidf_file = os.path.join(self.model_dir,"tfidf_{}.model".format(column))
-        self.lda_file = os.path.join(self.model_dir,"lda_{}_{}d.model".format(column,lda_num))
-        self.dict_file = os.path.join(self.model_dir,"{}.dict".format(column))
-        self.corpus_file = os.path.join(self.model_dir,"{}.corpus".format(column))
-        self.mode = "lightgbm" #option [lightgbm,SVC,LR]
-
 
 class FasttextParameter(ProjectPath):
     '''
