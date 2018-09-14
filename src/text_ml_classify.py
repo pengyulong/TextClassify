@@ -14,6 +14,7 @@ from utils import train_classify,write_data,save_prob_file,logging
 
 class MLTextClassify(ProjectPath):
     def __init__(self,column,classify_mode,feature_mode,feature_num,raw_corpus):
+        ProjectPath.__init__(self)
         self.classify_mode = classify_mode #option,['LR','SVC','lightgbm']
         self.column = column # option ['word_seg','article']
         self.feature_mode = feature_mode # option ['lsi','lda']
@@ -22,13 +23,14 @@ class MLTextClassify(ProjectPath):
         self.feature_data_file = os.path.join(self.model_dir,"{}_{}_{}d.dat".format(self.feature_mode,self.column,self.feature_num))
         self.dict_file = os.path.join(self.model_dir, "{}.dict".format(column))
         self.corpus_file = os.path.join(self.model_dir, "{}.corpus".format(column))
-        self.testSet = pd.read_csv(self.test_file)[self.column].tolist()
+        self.testSet = pd.read_csv(self.test_file)
         self.feature_test_X = None
-        self.trainSet = pd.read_csv(self.train_file)[self.column].tolist()
+        self.trainSet = pd.read_csv(self.train_file)
         self.corpus = None
         self.dictionary = None
         self.classify_model = None
         self.feature_model = None
+        self.raw_corpus = raw_corpus
 
     def load_data(self):
         '''
@@ -44,7 +46,7 @@ class MLTextClassify(ProjectPath):
             self.dictionary = dictionary
         else:
             logging.info("please wait create corpus and dictionary...")
-            texts = [[word for word in document.split(' ')] for document in self.docs]
+            texts = [[word for word in document.split(' ')] for document in self.raw_corpus]
             frequency = defaultdict(int)
             for text in texts:
                 for token in text:
@@ -90,8 +92,8 @@ class MLTextClassify(ProjectPath):
         from gensim.matutils import corpus2dense
         texts = [[word for word in doc.split(' ')]for doc in corpus]
         doc = [self.dictionary.doc2bow(text) for text in texts]
-        lda_vec = self.feature_model[doc]
-        features = corpus2dense((lda_vec,self.feature_num))
+        vec = self.feature_model[doc]
+        features = corpus2dense(vec,self.feature_num).T
         return features
 
     def train_classify_model(self):
@@ -100,14 +102,14 @@ class MLTextClassify(ProjectPath):
         :return:
         '''
         dataX,dataY = self._get_feature(self.trainSet[self.column].tolist()),(self.trainSet['class']-1).tolist()
-        self.classify_model,self.best_score = train_classify(dataX,dataY,self.feature_mode)
+        self.classify_model,self.best_score = train_classify(dataX,dataY,self.classify_mode)
 
     def save_features(self):
         '''
         保存对训练集和预测集提取的features用于后续调节分类模型或者特征的concat操作
         :return:
         '''
-        if os.path.exists(self.):
+        if os.path.exists(self.feature_data_file):
             (trainX,testX)=joblib.load(self.feature_data_file)
             self.feature_test_X = testX
         else:
@@ -135,9 +137,13 @@ class MLTextClassify(ProjectPath):
         return True
 
     def run(self):
+        logging.info("加载数据...")
         self.load_data()
+        logging.info("训练特征抽取模型...")
         self.train_feature_model()
+        logging.info("训练分类模型...")
         self.train_classify_model()
+        logging .info("对预测集进行预测...")
         self.predict()
 
 if __name__ == "__main__":
@@ -151,5 +157,6 @@ if __name__ == "__main__":
     text1 = set(df1[column].tolist())
     text2 = set(df2[column].tolist())
     raw_corpus = list(text1 | text2)
+    logging.info("raw_corpus's line :{}".format(len(raw_corpus)))
     test = MLTextClassify(column,classify_mode,feature_mode,feature_num,raw_corpus)
     test.run()

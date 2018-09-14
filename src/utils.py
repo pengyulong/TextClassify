@@ -334,7 +334,7 @@ def train_classify(dataX,dataY,mode):
     trainX, testX, trainY, testY = train_test_split(dataX, dataY, test_size=0.1, random_state=2008)
     if mode=="lightgbm":
         from lightgbm import LGBMClassifier
-        lgb_model = LGBMClassifier(num_leaves=127) #这里目前只知道num_leaves这个参数
+        lgb_model = LGBMClassifier() #这里目前只知道num_leaves这个参数
         clf = GridSearchCV(lgb_model,{'num_leaves':[32,64,128]},cv=5,scoring='f1_macro',verbose=1,n_jobs=-1)
         clf.fit(trainX,trainY)
         model = clf.best_estimator_

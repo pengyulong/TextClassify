@@ -82,7 +82,7 @@ class LDAClassify(ProjectPath):
         texts = [[word for word in doc.split(' ')]for doc in corpus]
         doc = [self.dictionary.doc2bow(text) for text in texts]
         lda_vec = self.model[doc]
-        features = corpus2dense((lda_vec,self.num_topics))
+        features = corpus2dense(lda_vec,self.num_topics).T
         return features
 
     def train_classify(self):
