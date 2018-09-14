@@ -131,7 +131,7 @@ class MLTextClassify(ProjectPath):
         for id,pred in enumerate(y_pred):
             string = "{},{}\n".format(id,pred+1)
             result_string.append(string)
-        write_data(result_string,result_file)
+        write_data(''.join(result_string),result_file)
         save_prob_file(y_prob,result_prob_file)
         logging.info("数据提交完毕,请查看{}...".format(self.result_dir))
         return True
@@ -141,6 +141,7 @@ class MLTextClassify(ProjectPath):
         self.load_data()
         logging.info("训练特征抽取模型...")
         self.train_feature_model()
+        self.save_features()
         logging.info("训练分类模型...")
         self.train_classify_model()
         logging .info("对预测集进行预测...")
@@ -148,7 +149,7 @@ class MLTextClassify(ProjectPath):
 
 if __name__ == "__main__":
     column = 'word_seg'
-    classify_mode = 'lightgbm'
+    classify_mode = 'LR'
     feature_mode = "lsi"
     feature_num = 20
     df1 = pd.read_csv('../data/train_set.csv')
