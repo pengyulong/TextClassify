@@ -38,14 +38,11 @@ def main(column,DIM_NUM):
     logging.info("开始训练cnn {} 文本分类模型...".format(column))
     best_acc = utils.train(train_loader, test_loader, net, loss, trainer, ctx,Params.num_epochs,column,Params.best_param_file)
     logging.info("模型训练完成,最佳的acc:{:.4f} 开始测试...".format(best_acc))
-    try:
-        net.load_parameters(Params.best_param_file,ctx=ctx)
-    except Exception as err:
-        logging.info("模型精度不够,请重新设置参数")
-    f1= utils.evaluate_valset(net,vocab,valSet,column)
+    net.load_parameters(Params.best_param_file,ctx=ctx)
+    f1= utils.evaluate_valset(net,valSet,vocab,column)
     best_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}.csv".format(column,f1))
     best_prob_file = os.path.join(Params.result_dir,"rnn_{}_{:.4f}_prob.csv".format(column,f1))
-    logging.info("nn网络在验证集最佳的f1_score:{}".format(f1))
+    logging.info("cnn网络在验证集最佳的f1_score:{:.4f}".format(f1))
     logging.info("对数据进行测试")
     textSet = pd.read_csv(Params.test_file)
     y_probs = utils.predict_test_result(net,vocab,textSet,column,best_file)
