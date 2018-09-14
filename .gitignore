@@ -2,6 +2,10 @@
 *.txt
 *.dict
 *.param
+*.bin
+*.vec
+*.corpus
+*.model
 /__pycache__
 /model
 /result
