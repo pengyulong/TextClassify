@@ -6,6 +6,8 @@
 *.vec
 *.corpus
 *.model
+*.projection
+*.index
 /__pycache__
 /model
 /result
