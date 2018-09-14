@@ -374,5 +374,5 @@ def transform_fasttext(dataSet,fasttextfile,column):
 
 def write_data(stringlist,savefile):
     with open(savefile,'w') as outfile:
-        outfile.write(stringlist[0])
+        outfile.write(stringlist)
     return True
