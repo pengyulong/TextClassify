@@ -10,7 +10,7 @@ from utils import logging
 import utils
 import pandas as pd
 from mxnet.gluon import data as gdata,loss as gloss
-from Parameter import RNNParameter
+from .Parameter import RNNParameter
 
 def main(column,DIM_NUM):
     Params = RNNParameter(column,DIM_NUM)

@@ -19,7 +19,7 @@ class CNNParameter(ProjectPath):
     def __init__(self,column,DIM_NUM):
         ProjectPath.__init__(self)
         self.num_outputs = 19
-        self.num_epochs = 1
+        self.num_epochs = 10
         self.lr = 0.01
         self.batch_size = 64
         self.ngram_kernel_sizes = [3,4,5]
@@ -33,7 +33,7 @@ class RNNParameter(ProjectPath):
         ProjectPath.__init__(self)
         self.num_outputs = 19
         self.lr = 0.1
-        self.num_epochs = 1
+        self.num_epochs = 100
         self.batch_size = 256
         self.num_hiddens = 256
         self.num_layers = 2

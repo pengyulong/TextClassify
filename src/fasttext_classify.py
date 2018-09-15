@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
+运用fasttext对文本进行文本分类
 @author: pengyulong
 """
 import fasttext
 import os
 import pandas as pd
 from sklearn.metrics import f1_score
-from utils import logging,transform_fasttext,select_sample_by_class,write_data,save_prob_file
-from Parameter import FasttextParameter
+from .utils import logging,transform_fasttext,select_sample_by_class,write_data,save_prob_file
+from .Parameter import FasttextParameter
 
 
 class FasttextClassify(FasttextParameter):

@@ -13,19 +13,22 @@ from Parameter import ProjectPath
 from utils import train_classify,write_data,save_prob_file,logging
 
 class MLTextClassify(ProjectPath):
+    '''
+    通过手工提取特征,然后利用Machine Learning对文本进行分类...
+    '''
     def __init__(self,column,classify_mode,feature_mode,feature_num,raw_corpus):
         ProjectPath.__init__(self)
         self.classify_mode = classify_mode #option,['LR','SVC','lightgbm']
         self.column = column # option ['word_seg','article']
-        self.feature_mode = feature_mode # option ['lsi','lda']
+        self.feature_mode = feature_mode # option ['lsi','lda','tfidf']
         self.feature_num = feature_num #提取特征的维度
-        self.feature_model_file = os.path.join(self.model_dir,"{}_{}_{}d.model".format(self.feature_mode,self.column,self.feature_num))
-        self.feature_data_file = os.path.join(self.model_dir,"{}_{}_{}d.dat".format(self.feature_mode,self.column,self.feature_num))
-        self.dict_file = os.path.join(self.model_dir, "{}.dict".format(column))
-        self.corpus_file = os.path.join(self.model_dir, "{}.corpus".format(column))
-        self.testSet = pd.read_csv(self.test_file)
-        self.feature_test_X = None
-        self.trainSet = pd.read_csv(self.train_file)
+        self.feature_model_file = os.path.join(self.model_dir,"{}_{}_{}d.model".format(self.feature_mode,self.column,self.feature_num))#提取特征模型的文件
+        self.feature_data_file = os.path.join(self.model_dir,"{}_{}_{}d.dat".format(self.feature_mode,self.column,self.feature_num))#抽取特征的保存文件(使用joblib)
+        self.dict_file = os.path.join(self.model_dir, "{}.dict".format(column)) #使用gensim格式的字典文件
+        self.corpus_file = os.path.join(self.model_dir, "{}.corpus".format(column)) #使用gensim格式的语料文件
+        self.testSet = pd.read_csv(self.test_file) #预测集的文件DataFrame
+        self.feature_test_X = None #人工抽取预测集后的特征文件
+        self.trainSet = pd.read_csv(self.train_file) #训练集的数据DataFrame
         self.corpus = None
         self.dictionary = None
         self.classify_model = None
@@ -66,7 +69,7 @@ class MLTextClassify(ProjectPath):
         '''
         if self.feature_mode=='lda':
             if os.path.exists(self.feature_model_file):
-                logging.info("load feature extractor model...")
+                logging.info("load LDA model...")
                 lda = models.LdaModel.load(self.feature_model_file)
                 self.feature_model=lda
             else:
@@ -75,7 +78,7 @@ class MLTextClassify(ProjectPath):
                 self.feature_model = lda
         elif self.feature_mode=='lsi':
             if os.path.exists(self.feature_model_file):
-                logging.info("load feature extractor model...")
+                logging.info("load LSI model...")
                 lsi = models.LsiModel.load(self.feature_model_file)
                 self.feature_model=lsi
             else:
@@ -139,10 +142,10 @@ class MLTextClassify(ProjectPath):
     def run(self):
         logging.info("加载数据...")
         self.load_data()
-        logging.info("训练特征抽取模型...")
+        logging.info("训练 {} 特征抽取模型...".format(self.feature_mode))
         self.train_feature_model()
         self.save_features()
-        logging.info("训练分类模型...")
+        logging.info("训练 {} 分类模型...".format(self.classify_mode))
         self.train_classify_model()
         logging .info("对预测集进行预测...")
         self.predict()

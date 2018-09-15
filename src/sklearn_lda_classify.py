@@ -6,16 +6,13 @@ Created on Mon Sep  3 13:55:53 2018
 """
 import pandas as pd
 import os
-from sklearn.metrics import f1_score
-import numpy as np
 from sklearn.externals import joblib
-from collections import Counter
-import random,warnings,time
+import warnings
 from gensim import corpora,models
 from collections import defaultdict
 warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
-from utils import logging,train_classify,write_data,save_prob_file
-from Parameter import ProjectPath
+from .utils import logging,train_classify,write_data,save_prob_file
+from .Parameter import ProjectPath
 
 class LDAClassify(ProjectPath):
     def __init__(self,num_topics,column,docs,mode):
