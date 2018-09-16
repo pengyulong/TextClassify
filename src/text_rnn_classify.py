@@ -48,7 +48,7 @@ def main(column,DIM_NUM):
     f1= utils.evaluate_valset(net,valSet,vocab,column)
     logging.info("rnn网络在验证集的f1_score:{:.4f}".format(f1))
     logging.info("对数据进行测试")
-    textSet = pd.read_csv('test_set.csv')
+    textSet = pd.read_csv(os.path.join(Params.data_dir,'test_set.csv'))
     y_probs = utils.predict_test_result(net,vocab,textSet,column,'result/rnn_{}_{:.4f}.csv'.format(column,f1))
     logging.info("保存概率数据")
     utils.save_prob_file(y_probs,'result/rnn_{}_{:.4f}_prob.csv'.format(column,f1))
