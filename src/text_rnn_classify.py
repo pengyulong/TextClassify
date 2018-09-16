@@ -10,7 +10,7 @@ from utils import logging
 import utils
 import pandas as pd
 from mxnet.gluon import data as gdata,loss as gloss
-from .Parameter import RNNParameter
+from Parameter import RNNParameter
 
 def main(column,DIM_NUM):
     Params = RNNParameter(column,DIM_NUM)
@@ -33,7 +33,7 @@ def main(column,DIM_NUM):
     net.embedding.weight.set_data(glove_embedding.idx_to_vec)
     # 训练中不更新词向量（net.embedding 中的模型参数）。
     net.embedding.collect_params().setattr('grad_req', 'null')
-    trainer = gluon.Trainer(net.collect_params(), 'adam', {'learning_rate': lr})
+    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': lr})
     loss = gloss.SoftmaxCrossEntropyLoss()
     trainSet,valSet = utils.select_sample_by_class(csvfile,ratio=0.85)
     train_features,test_features,train_labels,test_labels=utils.read_dg_data(trainSet,valSet,vocab,column,MAX_LEN=2500)
